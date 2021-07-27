@@ -9,9 +9,9 @@ Feature: Identifier et authentifier un utilisateur SOL
     Given G_open_session "KeyCloak" "administrateur" "" ""
     When W_open_module "m2a"
     And W_add_element "l'user" "<Username>"
-    And W_insert_element "dans Credentials" "le mot de passe: <Password>"
-    And W_assign_element "dans Role Mappings" "le role <Role>" "" ""
-    Then T_create_element "Le nouvel user" "" "dans la liste d'usagers" ""
+    And W_insert_element "dans Credentials le password" "<Password>"
+    And W_assign_element "dans Role Mappings le rôle" "<Role>" "" ""
+    Then T_create_element "Le nouvel user" "<Username>" "dans la liste d'usagers" ""
 
     Examples:
       | Realm | Username | Password | Role | hiptest-uid |

@@ -1,31 +1,89 @@
 # encoding: UTF-8
-import Key as Key
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
 
 
 
 class Actionwords:
     def __init__(self):
         self._driver = webdriver.Chrome()
-        self._driver_wait = WebDriverWait(self._driver,20)
+        self._driver_wait = WebDriverWait(self._driver,10)
+
+        self._url = "https://internal-api-m2a.dev-open-payment.fr/auth/admin/master/console/"
+        # self.values_role_CloudFareWeb = {"ABT", "AccessControl", "AccessControlFullAccess", "AlertConfiguration", "AlertManagement", "AlertReport", "CommsMonitor", "DeleteService", "DeviceDatasetDeployment", "EstateManagement", "EventGroupConfiguration",
+        #             "FareRules", "LegacyStages", "operator", "ProductEditor", "Quarantine", "Report", "RouteManagement", "ScheduleManager", "ScheduleManagerImportScheduleData", "StaffReport", "SystemConfiguration", "TicketEditor",
+        #             "Topology", "TvmReport", "validator.reader"}
 
     def g_open_session(self, url, wrt_element_type = "", wrt_negation = "", user_type = "", free_text = ""):
         # TODO: Implement action: "Une session %s %s a %s été ouverte" % (wrt_element_type, device_type, wrt_negation)
-        self._driver.get(url)
+        self._driver.get(self._url)
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID,"username")))
         self._driver.find_element_by_id("username").clear()
         self._driver.find_element_by_id("password").clear()
         self._driver.find_element_by_id("username").send_keys("etaillacq")
-        self._driver.find_element_by_id("password").send_keys("Fr@nc1sc0ETT")
+        self._driver.find_element_by_id("password").send_keys("Fr4nc1sc0")
         self._driver.find_element_by_id("kc-login").send_keys(Keys.RETURN)
 
     def w_open_module(self, element_value):
         # TODO: Implement action: "Ouvrir le module *%s*" % (element_value)
-        self._driver.find_element_by_xpath("/html/body/div[1]/div/div/div[1]/table/tbody/tr[3]/td/a").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.XPATH,"/html/body/div[1]/div/div/div[1]/table/tbody/tr[3]/td/a")))
+        self._driver.find_element_by_link_text("m2a").click()
 
-    def w_add_element(self, element_type, element_value = ""):
+    def w_add_element(self, element_type, element_value):
         # TODO: Implement action: "Ajouter %s %s" % (element_type, element_value)
+        self._driver_wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Users")))
+        self._driver.find_element_by_link_text("Users").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID, "createUser")))
+        self._driver.find_element_by_id("createUser").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID, "username")))
+        self._driver.find_element_by_id("username").send_keys(element_value)
+        self._driver.find_element_by_xpath("(//button[@type='submit'])[2]").click()
+
+
+    def w_insert_element(self, element_type, wrt_additional_informations):
+        # TODO: Implement action: "Insérer %s %s" % (element_type, wrt_additional_informations)
+        self._driver_wait.until(EC.visibility_of_element_located((By.LINK_TEXT,"Credentials")))
+        self._driver.find_element_by_link_text("Credentials").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID, "newPas")))
+        self._driver.find_element_by_id("newPas").send_keys(wrt_additional_informations)
+        self._driver.find_element_by_id("confirmPas").send_keys(wrt_additional_informations)
+        self._driver.find_element_by_xpath("//button[contains(.,'Set Password')]").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".btn-danger")))
+        #self._driver.switch_to.alert.accept()
+        self._driver.find_element_by_css_selector(".btn-danger").click()
+
+
+    def w_assign_element(self, element_type, element_value, element_status = "", wrt_additional_informations = ""):
+        # TODO: Implement action: "Attribuer %s %s à %s %s" % (element_type, element_value, element_status, wrt_additional_informations)
+        self._driver.refresh()
+        self._driver_wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Role Mappings")))
+        self._driver.find_element_by_link_text("Role Mappings").click()
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID, "s2id_clients")))
+        self._driver.find_element_by_id("s2id_clients").click()
+        self._driver.find_element_by_class_name("select2-input").click()
+        self._driver.find_element_by_class_name("select2-input").send_keys(element_value)
+        self._driver.find_element_by_class_name("select2-input").click()
+        self._driver.find_element_by_class_name("select2-input").send_keys(Keys.RETURN)
+
+
+        self._driver_wait.until(EC.visibility_of_element_located((By.ID, "available-client")))
+        select = Select(self._driver.find_element_by_id("available-client"))
+
+        for value in select.options:
+            select.select_by_visible_text(value.text)
+
+        self._driver.find_element_by_xpath("(//button[@type='submit'])[3]").click()
+
+
+    def t_create_element(self, element_type, element_value, wrt_additional_informations, wrt_negation = ""):
+        # TODO: Implement result: "%s est %s créé(e) %s et visible %s" % (element_type, wrt_negation, element_value, wrt_additional_informations)
+        self._driver.find_element_by_link_text("Users").click()
+        assert element_value in self._driver.page_source
+
 
 
 
@@ -107,10 +165,6 @@ class Actionwords:
 
     def g_display_element(self, wrt_element_type = "", element_type = "", element_label = "", wrt_additional_informations = "", free_text = "", datatable = "||"):
         # TODO: Implement action: "%s %s est affiché(e) %s" % (wrt_element_type, element_label, wrt_additional_informations)
-        raise NotImplementedError
-
-    def t_create_element(self, element_type = "", element_value = "", wrt_additional_informations = "", wrt_negation = ""):
-        # TODO: Implement result: "%s est %s créé(e) %s et visible %s" % (element_type, wrt_negation, element_value, wrt_additional_informations)
         raise NotImplementedError
 
     def w_create_version(self, element_type = ""):
@@ -429,17 +483,10 @@ class Actionwords:
         # TODO: Implement result: "%s %s s'affiche %s" % (wrt_element_type, element_label, wrt_additional_informations)
         raise NotImplementedError
 
-    def w_insert_element(self, element_type = "", wrt_additional_informations = ""):
-        # TODO: Implement action: "Insérer %s %s" % (element_type, wrt_additional_informations)
-        raise NotImplementedError
-
     def t_open_element(self, element_type = "", wrt_additional_informations = ""):
         # TODO: Implement result: "%s s'ouvre %s" % (element_type, wrt_additional_informations)
         raise NotImplementedError
 
-    def w_assign_element(self, element_type = "", element_value="", element_status = "", wrt_additional_informations = ""):
-        # TODO: Implement action: "Attribuer %s %s à %s %s" % (element_type, element_value, element_status, wrt_additional_informations)
-        raise NotImplementedError
 
     def w_execute_command(self, element_value = "", element_type = "", element_label = ""):
         # TODO: Implement action: "Exécuter la commande %s %s %s" % (element_type, element_label, element_value)
